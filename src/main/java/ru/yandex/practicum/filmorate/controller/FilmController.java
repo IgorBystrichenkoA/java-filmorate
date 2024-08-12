@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Marker;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/v1/films")
+@RequestMapping("/films")
 @Slf4j
 public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
