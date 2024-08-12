@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FilmTest {
     private static final Validator validator;
+
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
