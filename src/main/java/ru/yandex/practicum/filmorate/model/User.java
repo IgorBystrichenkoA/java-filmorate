@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class User {
     private String login;
     private String name;
     @PastOrPresent
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Calendar birthday;
 }
