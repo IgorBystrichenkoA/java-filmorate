@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserTest {
     private static final Validator validator;
     private static final Calendar VALID_CALENDAR = new GregorianCalendar(2000, Calendar.JANUARY, 1);
+
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
