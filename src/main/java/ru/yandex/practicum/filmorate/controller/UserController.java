@@ -43,8 +43,7 @@ public class UserController {
         }
         if (user.getName().isBlank()) {
             userToUpdate.setName(user.getLogin());
-        }
-        else {
+        } else {
             userToUpdate.setName(user.getName());
         }
         userToUpdate.setEmail(user.getEmail());
