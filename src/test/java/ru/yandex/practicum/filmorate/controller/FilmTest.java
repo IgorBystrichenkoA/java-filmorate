@@ -46,11 +46,11 @@ class FilmTest {
     }
 
     @Test
-    @DisplayName("Проверка валидации пустого описания")
+    @DisplayName("Проверка валидации пустого имени")
     void validateDescriptionNotBlankTest() {
-        final Film film = new Film(1, "Film description is blank test", "",
+        final Film film = new Film(1, "", "Film name blank test",
                 Film.FILM_BIRTHDAY, 10);
-        assertValidation(film, NotBlank.class, "description");
+        assertValidation(film, NotBlank.class, "name");
     }
 
     @Test

@@ -12,8 +12,9 @@ import java.util.GregorianCalendar;
 public class Film {
     @NotNull(groups = Marker.OnUpdate.class)
     private Integer id;
+    @NotBlank
     private String name;
-    @NotBlank @Size(max = 200)
+    @Size(max = 200)
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Calendar releaseDate;
