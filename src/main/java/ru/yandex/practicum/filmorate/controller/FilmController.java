@@ -36,7 +36,7 @@ public class FilmController {
         Film filmToUpdate = films.get(film.getId());
         if (filmToUpdate == null) {
             log.error("Film not found");
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
         }
         filmToUpdate.setName(film.getName());
         filmToUpdate.setDescription(film.getDescription());
