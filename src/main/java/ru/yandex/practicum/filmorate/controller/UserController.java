@@ -19,7 +19,7 @@ public class UserController {
     private int seq = 0;
 
     @PostMapping
-    public User create(@Valid @RequestBody User user){
+    public User create(@Valid @RequestBody User user) {
         log.info("Creating user: {}", user);
         user.setId(generateId());
         users.put(user.getId(), user);
@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Validated(Marker.OnUpdate.class) @RequestBody User user){
+    public User update(@Validated(Marker.OnUpdate.class) @RequestBody User user) {
         log.info("Updating user: {}", user);
         User userToUpdate = users.get(user.getId());
         if (userToUpdate == null) {
