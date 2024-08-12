@@ -20,7 +20,6 @@ public class Film {
     private String name;
     @NotBlank @Size(max = 200)
     private String description;
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private Calendar releaseDate;
     @DurationMin(nanos = 0)
     @DurationUnit(ChronoUnit.MINUTES)

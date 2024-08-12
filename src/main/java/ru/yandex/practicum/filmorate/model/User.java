@@ -18,6 +18,5 @@ public class User {
     private String login;
     private String name;
     @PastOrPresent
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private Calendar birthday;
 }
