@@ -2,20 +2,20 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new ConcurrentHashMap<>();
     private int seq = 0;
 
     @PostMapping
@@ -36,7 +36,7 @@ public class FilmController {
         Film filmToUpdate = films.get(film.getId());
         if (filmToUpdate == null) {
             log.error("Film not found");
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+            throw new NotFoundException("Film not found");
         }
         filmToUpdate.setName(film.getName());
         filmToUpdate.setDescription(film.getDescription());

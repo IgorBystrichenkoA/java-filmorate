@@ -5,6 +5,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import jakarta.validation.constraints.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -18,31 +19,12 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FilmTest {
-    private static final Validator validator;
+    private static Validator validator;
 
-    static {
+    @BeforeAll
+    static void setUp() {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
-    }
-
-    void assertValidation(Film film, Class<? extends Annotation> annotationClass, String propertyName,
-                            Class<?> group) {
-        Set<ConstraintViolation<Film>> violations;
-        if (group == null) {
-            violations = validator.validate(film);
-        } else {
-            violations = validator.validate(film, group);
-        }
-        assertFalse(violations.isEmpty(), "Violation not found");
-        ConstraintViolation<Film> violation = violations.iterator().next();
-        assertEquals(annotationClass, violation.getConstraintDescriptor().getAnnotation().annotationType(),
-                "Ожидаемый тип валидации не соответствует действительному");
-        assertEquals(propertyName, violation.getPropertyPath().toString(),
-                "Ошибка валидации неожидаемого поля");
-    }
-
-    void assertValidation(Film film, Class<? extends Annotation> annotationClass, String propertyName) {
-        assertValidation(film, annotationClass, propertyName, null);
     }
 
     @Test
@@ -83,5 +65,24 @@ class FilmTest {
         final Film film = new Film(null, "Film duration is invalid", "a",
                 Film.FILM_BIRTHDAY, 10);
         assertValidation(film, NotNull.class, "id", Marker.OnUpdate.class);
+    }
+
+    void assertValidation(Film film, Class<? extends Annotation> annotationClass, String propertyName, Class<?> group) {
+        Set<ConstraintViolation<Film>> violations;
+        if (group == null) {
+            violations = validator.validate(film);
+        } else {
+            violations = validator.validate(film, group);
+        }
+        assertFalse(violations.isEmpty(), "Violation not found");
+        ConstraintViolation<Film> violation = violations.iterator().next();
+        assertEquals(annotationClass, violation.getConstraintDescriptor().getAnnotation().annotationType(),
+                "Ожидаемый тип валидации не соответствует действительному");
+        assertEquals(propertyName, violation.getPropertyPath().toString(),
+                "Ошибка валидации неожидаемого поля");
+    }
+
+    void assertValidation(Film film, Class<? extends Annotation> annotationClass, String propertyName) {
+        assertValidation(film, annotationClass, propertyName, null);
     }
 }
