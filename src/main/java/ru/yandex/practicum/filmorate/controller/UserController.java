@@ -24,7 +24,7 @@ public class UserController {
     public User create(@Valid @RequestBody User user) {
         log.info("Creating user: {}", user);
         user.setId(generateId());
-        if (StringUtils.hasText(user.getName())) {
+        if (!StringUtils.hasText(user.getName())) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
@@ -43,7 +43,7 @@ public class UserController {
             log.error("User not found");
             throw new NotFoundException("User not found");
         }
-        if (StringUtils.hasText(user.getName())) {
+        if (!StringUtils.hasText(user.getName())) {
             userToUpdate.setName(user.getLogin());
         } else {
             userToUpdate.setName(user.getName());
