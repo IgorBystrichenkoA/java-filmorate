@@ -6,8 +6,12 @@ import java.util.Collection;
 
 public interface UserStorage {
     User create(User user);
+
     User get(int id);
+
     User update(User user);
+
     User delete(User user);
+
     Collection<User> getAll();
 }
