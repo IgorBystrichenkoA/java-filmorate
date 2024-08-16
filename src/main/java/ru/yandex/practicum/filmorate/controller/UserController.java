@@ -2,61 +2,68 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private final Map<Integer, User> users = new ConcurrentHashMap<>();
-    private int seq = 0;
+    private final UserService userService;
+    private final UserStorage userStorage;
+
+    @Autowired
+    public UserController(UserService userService, UserStorage userStorage) {
+        this.userService = userService;
+        this.userStorage = userStorage;
+    }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.info("Creating user: {}", user);
-        user.setId(generateId());
-        if (!StringUtils.hasText(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        return user;
-    }
-
-    private int generateId() {
-        return ++seq;
+        return userStorage.create(user);
     }
 
     @PutMapping
     public User update(@Validated(Marker.OnUpdate.class) @RequestBody User user) {
         log.info("Updating user: {}", user);
-        User userToUpdate = users.get(user.getId());
-        if (userToUpdate == null) {
-            log.error("User not found");
-            throw new NotFoundException("User not found");
-        }
-        if (!StringUtils.hasText(user.getName())) {
-            userToUpdate.setName(user.getLogin());
-        } else {
-            userToUpdate.setName(user.getName());
-        }
-        userToUpdate.setEmail(user.getEmail());
-        userToUpdate.setLogin(user.getLogin());
-        userToUpdate.setBirthday(user.getBirthday());
-        return userToUpdate;
+        return userStorage.update(user);
     }
 
     @GetMapping
-    public Collection<User> getUsers() {
+    public Collection<User> getAll() {
         log.info("Retrieving all users");
-        return users.values();
+        return userStorage.getAll();
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("Adding friend");
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("Deleting friend");
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable int id) {
+        log.info("Retrieving all friends");
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getFriends(@PathVariable int id, @PathVariable int otherId) {
+        log.info("Retrieving mutual friends");
+        return userService.getMutualFriends(id, otherId);
     }
 }
