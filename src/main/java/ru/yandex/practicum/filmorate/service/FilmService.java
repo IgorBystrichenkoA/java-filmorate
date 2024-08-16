@@ -25,6 +25,7 @@ public class FilmService {
     }
 
     public void deleteLike(Integer filmId, Integer userId) {
+        userStorage.get(userId);
         filmStorage.get(filmId).deleteLike(userId);
     }
 
