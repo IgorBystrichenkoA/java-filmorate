@@ -44,7 +44,7 @@ public class FilmController {
         return filmStorage.getAllFilms();
     }
 
-    @GetMapping("/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Adding like");
         filmService.addLike(id, userId);
