@@ -1,17 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
-
     private final Map<Integer, User> users = new ConcurrentHashMap<>();
     private int seq = 0;
 
@@ -26,7 +26,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User get(int id) {
+    public User get(Integer id) {
         User user = users.get(id);
         if (user == null) {
             throw new NotFoundException("User not found");
@@ -59,6 +59,20 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Collection<User> getAll() {
         return users.values();
+    }
+
+    @Override
+    public Collection<User> getFriends(Integer id) {
+        return get(id).getFriends().stream()
+                .map(this::get)
+                .toList();
+    }
+
+    @Override
+    public Collection<User> getUsersByIds(Collection<Integer> ids) {
+        return ids.stream()
+                .map(this::get)
+                .toList();
     }
 
     private int generateId() {

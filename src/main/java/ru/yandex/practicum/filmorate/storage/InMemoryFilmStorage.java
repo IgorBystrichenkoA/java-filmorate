@@ -1,16 +1,18 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Integer, Film> films = new TreeMap<>();
+    private final Map<Integer, Film> films = new ConcurrentHashMap<>();
     private int seq = 0;
 
     @Override
@@ -21,7 +23,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film get(int id) {
+    public Film get(Integer id) {
         Film film = films.get(id);
         if (film == null) {
             throw new NotFoundException("Film not found");
@@ -50,6 +52,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> getAllFilms() {
         return films.values();
+    }
+
+    @Override
+    public Collection<Film> getTopFilms(Integer count) {
+        return getAllFilms().stream()
+                    .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size())
+                    .limit(count)
+                    .toList();
     }
 
     private int generateId() {
