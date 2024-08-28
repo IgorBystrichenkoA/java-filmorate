@@ -1,53 +1,55 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/films")
-@Slf4j
 public class FilmController {
-    private final Map<Integer, Film> films = new ConcurrentHashMap<>();
-    private int seq = 0;
+    private final FilmService filmService;
+    private final FilmStorage filmStorage;
+
+    @Autowired
+    public FilmController(FilmService filmService, FilmStorage filmStorage) {
+        this.filmService = filmService;
+        this.filmStorage = filmStorage;
+    }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        log.info("Creating film: {}", film);
-        film.setId(generateId());
-        films.put(film.getId(), film);
-        return film;
-    }
-
-    private int generateId() {
-        return ++seq;
+        return filmStorage.create(film);
     }
 
     @PutMapping
     public Film update(@Validated(Marker.OnUpdate.class) @RequestBody Film film) {
-        log.info("Updating film: {}", film);
-        Film filmToUpdate = films.get(film.getId());
-        if (filmToUpdate == null) {
-            log.error("Film not found");
-            throw new NotFoundException("Film not found");
-        }
-        filmToUpdate.setName(film.getName());
-        filmToUpdate.setDescription(film.getDescription());
-        filmToUpdate.setReleaseDate(film.getReleaseDate());
-        filmToUpdate.setDuration(film.getDuration());
-        return filmToUpdate;
+        return filmStorage.update(film);
     }
 
     @GetMapping
     public Collection<Film> getFilms() {
-        log.info("Retrieving all films");
-        return films.values();
+        return filmStorage.getAllFilms();
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable int id, @PathVariable int userId) {
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable int id, @PathVariable int userId) {
+        filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getTopFilms(count);
     }
 }

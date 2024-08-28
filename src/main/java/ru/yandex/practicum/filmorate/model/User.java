@@ -2,13 +2,13 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Calendar;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Data
-@AllArgsConstructor
 public class User {
     @NotNull(groups = Marker.OnUpdate.class)
     private Integer id;
@@ -20,4 +20,23 @@ public class User {
     @PastOrPresent
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Calendar birthday;
+
+    private Set<Integer> friends = ConcurrentHashMap.newKeySet();
+
+    public User(Integer id, String email, String login, String name, Calendar birthday) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
+
+    public void addFriend(Integer id) {
+        friends.add(id);
+    }
+
+    public void deleteFriend(Integer id) {
+        friends.remove(id);
+    }
+
 }
