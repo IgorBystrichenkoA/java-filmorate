@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -15,17 +17,17 @@ import java.util.Collection;
 
 @Component("h2FilmStorage")
 public class FilmDbStorage implements FilmStorage {
-    JdbcTemplate jdbcTemplate;
+    NamedParameterJdbcTemplate jdbc;
     FilmRowMapper filmRowMapper;
     GenreRowMapper genreRowMapper;
     RatingRowMapper ratingRowMapper;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate,
+    public FilmDbStorage(NamedParameterJdbcTemplate jdbc,
                          FilmRowMapper filmRowMapper,
                          GenreRowMapper genreRowMapper,
                          RatingRowMapper ratingRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbc = jdbc;
         this.filmRowMapper = filmRowMapper;
         this.genreRowMapper = genreRowMapper;
         this.ratingRowMapper = ratingRowMapper;
@@ -33,19 +35,29 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) {
-        String query = "INSERT INTO films (name, description, releaseDate, duration, rating_id) VALUES (?,?,?,?,?)";
-        Integer ratingId = film.getRating() == null ? null : film.getRating().getId();
-        jdbcTemplate.update(query, film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), ratingId);
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("name", film.getName());
+        namedParams.addValue("description", film.getDescription());
+        namedParams.addValue("releaseDate", film.getReleaseDate());
+        namedParams.addValue("duration", film.getDuration());
+        namedParams.addValue("rating_id", film.getRating() == null ? null : film.getRating().getId());
+
+        String sqlQuery = "INSERT INTO films (name, description, releaseDate, duration, rating_id) " +
+                "VALUES (:name,:description,:releaseDate,:duration,:rating_id)";
+        jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
+        film.setId(keyHolder.getKeyAs(Integer.class));
         return film;
     }
 
     @Override
     public Film get(Integer id) {
-        String query = "SELECT f.*, r.name AS rating_name FROM films AS f " +
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
+        String sqlQuery = "SELECT f.*, r.name AS rating_name FROM films AS f " +
                 "INNER JOIN ratings AS r ON f.rating_id = r.id " +
-                "WHERE id = ?";
-        Film result = jdbcTemplate.queryForObject(query, filmRowMapper, id);
+                "WHERE id = :id";
+        Film result = jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
         if (result == null) {
             throw new NotFoundException("Film not found");
         }
@@ -54,46 +66,59 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        String sqlQuery = "UPDATE films SET " +
-                "name =?, description =?, releaseDate =?, duration =?, rating_id =? " +
-                "WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), film.getRating() == null ? null : film.getRating().getId(), film.getId());
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", film.getId());
+        namedParams.addValue("name", film.getName());
+        namedParams.addValue("description", film.getDescription());
+        namedParams.addValue("releaseDate", film.getReleaseDate());
+        namedParams.addValue("duration", film.getDuration());
+        namedParams.addValue("rating_id", film.getRating() == null ? null : film.getRating().getId());
+        String sqlQuery = "UPDATE films SET name = :name, description = :description, " +
+                "releaseDate =:releaseDate, duration =:duration, rating_id =:rating_id " +
+                "WHERE id = :id";
+        jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
         return film;
     }
 
     @Override
     public Film delete(Film film) {
-        String query = "DELETE FROM films WHERE id = ?";
-        jdbcTemplate.update(query, film.getId());
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", film.getId());
+        String sqlQuery = "DELETE FROM films WHERE id = :id";
+        jdbc.update(sqlQuery, namedParams);
         return film;
     }
 
     @Override
     public Collection<Film> getAllFilms() {
-        String query = "SELECT f.*, r.name AS rating_name FROM films AS f " +
+        String sqlQuery = "SELECT f.*, r.name AS rating_name FROM films AS f " +
                 "INNER JOIN ratings AS r ON f.rating_id = r.id";
-        return jdbcTemplate.query(query, filmRowMapper);
+        return jdbc.query(sqlQuery, filmRowMapper);
     }
 
     @Override
     public Collection<Film> getTopFilms(Integer count) {
-        String query = "SELECT f.*, r.name FROM films AS f " +
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("count", count);
+        String sqlQuery = "SELECT f.*, r.name FROM films AS f " +
                 "INNER JOIN ratings AS r ON f.rating_id = r.id" +
-                "ORDER BY likes DESC LIMIT ?";
-        return jdbcTemplate.query(query, filmRowMapper, count);
+                "ORDER BY likes DESC LIMIT :count";
+        return jdbc.query(sqlQuery, namedParams, filmRowMapper);
     }
 
     @Override
     public Collection<Genre> getAllGenres() {
-        String query = "SELECT * FROM genres";
-        return jdbcTemplate.query(query, genreRowMapper);
+        String sqlQuery = "SELECT * FROM genres";
+        return jdbc.query(sqlQuery, genreRowMapper);
     }
 
     @Override
     public Genre getGenre(Integer id) {
-        String query = "SELECT * FROM genres WHERE id = ?";
-        Genre result = jdbcTemplate.queryForObject(query, genreRowMapper, id);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
+        String sqlQuery = "SELECT * FROM genres WHERE id = :id";
+        Genre result = jdbc.queryForObject(sqlQuery, namedParams, genreRowMapper);
         if (result == null) {
             throw new NotFoundException("Genre not found");
         }
@@ -102,14 +127,16 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Rating> getAllRatings() {
-        String query = "SELECT * FROM ratings";
-        return jdbcTemplate.query(query, ratingRowMapper);
+        String sqlQuery = "SELECT * FROM ratings";
+        return jdbc.query(sqlQuery, ratingRowMapper);
     }
 
     @Override
     public Rating getRating(Integer id) {
-        String query = "SELECT * FROM ratings WHERE id = ?";
-        Rating result = jdbcTemplate.queryForObject(query, ratingRowMapper, id);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
+        String sqlQuery = "SELECT * FROM ratings WHERE id = :id";
+        Rating result = jdbc.queryForObject(sqlQuery, namedParams, ratingRowMapper);
         if (result == null) {
             throw new NotFoundException("Rating not found");
         }
@@ -118,13 +145,19 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(Integer userId, Integer filmId) {
-        String query = "INSERT INTO likes (user_id, film_id) VALUES (?,?)";
-        jdbcTemplate.update(query, userId, filmId);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("userId", userId);
+        namedParams.addValue("filmId", filmId);
+        String sqlQuery = "INSERT INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
+        jdbc.update(sqlQuery, namedParams);
     }
 
     @Override
     public void deleteLike(Integer filmId, Integer userId) {
-        String query = "DELETE FROM likes WHERE user_id =? AND film_id= ?";
-        jdbcTemplate.update(query, userId, filmId);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("userId", userId);
+        namedParams.addValue("filmId", filmId);
+        String sqlQuery = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
+        jdbc.update(sqlQuery, namedParams);
     }
 }

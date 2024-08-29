@@ -14,12 +14,10 @@ import java.util.Collection;
 @Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(@Qualifier("h2FilmStorage") FilmStorage filmStorage, @Qualifier("h2UserStorage") UserStorage userStorage) {
+    public FilmService(@Qualifier("h2FilmStorage") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
     }
 
     public void addLike(Integer filmId, Integer userId) {

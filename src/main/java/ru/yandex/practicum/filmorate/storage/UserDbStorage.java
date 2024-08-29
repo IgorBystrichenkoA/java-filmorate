@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -11,26 +13,35 @@ import java.util.Collection;
 
 @Component("h2UserStorage")
 public class UserDbStorage implements UserStorage {
-    JdbcTemplate jdbcTemplate;
+    NamedParameterJdbcTemplate jdbc;
     UserRowMapper mapper;
 
     @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
+    public UserDbStorage(NamedParameterJdbcTemplate jdbc, UserRowMapper userRowMapper) {
+        this.jdbc = jdbc;
         this.mapper = userRowMapper;
     }
 
     @Override
     public User create(User user) {
-        String query = "INSERT INTO users (email, login, name, birthday) VALUES (?,?,?,?)";
-        jdbcTemplate.update(query, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("email", user.getEmail());
+        namedParams.addValue("login", user.getLogin());
+        namedParams.addValue("name", user.getName());
+        namedParams.addValue("birthday", user.getBirthday());
+        String sqlQuery = "INSERT INTO users (email, login, name, birthday) VALUES (:email,:login,:name,:birthday)";
+        jdbc.update(sqlQuery, namedParams, keyHolder, new String[]{"id"});
+        user.setId(keyHolder.getKeyAs(Integer.class));
         return user;
     }
 
     @Override
     public User get(Integer id) {
-        String query = "SELECT * FROM users WHERE id = ?";
-        User result = jdbcTemplate.queryForObject(query, mapper, id);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
+        String sqlQuery = "SELECT * FROM users WHERE id = :id";
+        User result = jdbc.queryForObject(sqlQuery, namedParams, mapper);
         if (result == null) {
             throw new NotFoundException("User not found");
         }
@@ -39,49 +50,78 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("email", user.getEmail());
+        namedParams.addValue("login", user.getLogin());
+        namedParams.addValue("name", user.getName());
+        namedParams.addValue("birthday", user.getBirthday());
         String sqlQuery = "UPDATE users SET " +
-                "email =?, login =?, name =?, birthday =? " +
-                "WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
+                "email = :email, login =:login, name =:name, birthday =:birthday " +
+                "WHERE id = :id";
+        jdbc.update(sqlQuery, namedParams);
         return user;
     }
 
     @Override
     public User delete(User user) {
-        String sqlQuery = "DELETE FROM users WHERE id =?";
-        jdbcTemplate.update(sqlQuery, user.getId());
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", user.getId());
+        String sqlQuery = "DELETE FROM users WHERE id =:id";
+        jdbc.update(sqlQuery, namedParams);
         return user;
     }
 
     @Override
     public Collection<User> getAll() {
         String sqlQuery = "SELECT * FROM users";
-        return jdbcTemplate.query(sqlQuery, mapper);
+        return jdbc.query(sqlQuery, mapper);
     }
 
     @Override
     public Collection<User> getFriends(Integer id) {
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
         String sqlQuery = "SELECT u.* FROM friends AS f " +
                 "INNER JOIN users AS u ON f.user_friend_id = u.id " +
-                "WHERE f.user_id =?";
-        return jdbcTemplate.query(sqlQuery, mapper, id);
+                "WHERE f.user_id = :id";
+        return jdbc.query(sqlQuery, namedParams, mapper);
     }
 
     @Override
     public Collection<User> getUsersByIds(Collection<Integer> ids) {
-        String sqlQuery = "SELECT * FROM users WHERE id IN (?)";
-        return jdbcTemplate.query(sqlQuery, mapper, ids);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("ids", ids);
+        String sqlQuery = "SELECT * FROM users WHERE id IN (:ids)";
+        return jdbc.query(sqlQuery, namedParams, mapper);
     }
 
     @Override
     public void addFriend(Integer id, Integer friendId) {
-        String sqlQuery = "INSERT INTO friends (user_id, user_friend_id) VALUES (?,?)";
-        jdbcTemplate.update(sqlQuery, id, friendId);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
+        namedParams.addValue("friendId", friendId);
+        String sqlQuery = "INSERT INTO friends (user_id, user_friend_id) VALUES (:id,:friendId)";
+        jdbc.update(sqlQuery, namedParams);
     }
 
     @Override
     public void deleteFriend(Integer id, Integer friendId) {
-        String sqlQuery = "DELETE FROM friends WHERE user_id =? AND film_id= ?";
-        jdbcTemplate.update(sqlQuery, id, friendId);
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
+        namedParams.addValue("friendId", friendId);
+        String sqlQuery = "DELETE FROM friends WHERE user_id = :id AND user_friend_id = :friendId";
+        jdbc.update(sqlQuery, namedParams);
+    }
+
+    @Override
+    public Collection<User> getFriendsOf(Integer id) {
+        MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", id);
+        String sqlQuery = "SELECT u.* FROM friends f1 JOIN friends f2 ON " +
+                "f1.user_friend_id = f2.user_id AND " +
+                "f2.user_friend_id = f1.user_id " +
+                "JOIN users u ON u.id = f1.user_friend_id" +
+                "WHERE f1.user_id = :id";
+        return jdbc.query(sqlQuery, namedParams, mapper);
     }
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Calendar;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class User {
     @NotNull(groups = Marker.OnUpdate.class)
     private Integer id;
@@ -41,5 +43,4 @@ public class User {
     public void deleteFriend(Integer id) {
         friends.remove(id);
     }
-
 }
