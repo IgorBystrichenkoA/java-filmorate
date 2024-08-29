@@ -3,12 +3,14 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Calendar;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
+@NoArgsConstructor
 public class User {
     @NotNull(groups = Marker.OnUpdate.class)
     private Integer id;
@@ -22,6 +24,7 @@ public class User {
     private Calendar birthday;
 
     private Set<Integer> friends = ConcurrentHashMap.newKeySet();
+    private Set<Integer> notConfirmedFriends = ConcurrentHashMap.newKeySet();
 
     public User(Integer id, String email, String login, String name, Calendar birthday) {
         this.id = id;
