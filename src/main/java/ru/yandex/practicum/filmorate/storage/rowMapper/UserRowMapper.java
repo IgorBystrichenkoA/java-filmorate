@@ -19,7 +19,7 @@ public class UserRowMapper implements RowMapper<User> {
         user.setLogin(resultSet.getString("login"));
         user.setName(resultSet.getString("name"));
         Date date = resultSet.getDate("birthday");
-        if (date!= null) {
+        if (date != null) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             user.setBirthday(cal);
