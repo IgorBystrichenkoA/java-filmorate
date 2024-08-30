@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.rowMapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.rowMapper.RatingRowMapper;
 
 import java.util.Collection;
+import java.util.List;
 
 @Component("h2FilmStorage")
 public class FilmDbStorage implements FilmStorage {
@@ -60,7 +61,18 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "INSERT INTO films (name, description, releaseDate, duration, mpa) " +
                 "VALUES (:name,:description,:releaseDate,:duration,:mpa)";
         jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
+
         film.setId(keyHolder.getKeyAs(Integer.class));
+
+        List<Genre> genres = film.getGenres();
+        for (Genre genre : genres) {
+            namedParams.addValue("film_id", film.getId());
+            namedParams.addValue("genre_id", genre.getId());
+            sqlQuery = "INSERT INTO genres_films (film_id, genre_id) " +
+                    "VALUES (:film_id, :genre_id)";
+            jdbc.update(sqlQuery, namedParams);
+        }
+
         return film;
     }
 
@@ -72,8 +84,16 @@ public class FilmDbStorage implements FilmStorage {
                 "INNER JOIN mpa AS m ON f.mpa = m.id " +
                 "WHERE f.id = :id";
         try {
+            Film film = jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
+            sqlQuery = "SELECT * FROM genres_films gf" +
+                    "INNER JOIN genres g ON gf.genre_id = g.id " +
+                    "WHERE gf.film_id = :id";
+            List<Genre> genres = jdbc.query(sqlQuery, namedParams, genreRowMapper);
+            if (!genres.isEmpty()) {
+                film.setGenres(genres);
+            }
             return jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
-        } catch (EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException | NullPointerException e) {
             throw new NotFoundException("Film not found");
         }
     }
