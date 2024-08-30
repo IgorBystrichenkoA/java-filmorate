@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.lang.annotation.Annotation;
 import java.util.Calendar;
@@ -32,7 +32,7 @@ class FilmTest {
     @DisplayName("Проверка валидации пустого имени")
     void validateDescriptionNotBlankTest() {
         final Film film = new Film(1, "", "Film name blank test",
-                Film.FILM_BIRTHDAY, 10, new Rating("Комедия"));
+                Film.FILM_BIRTHDAY, 10, new Mpa("Комедия"));
         assertValidation(film, NotBlank.class, "name");
     }
 
@@ -40,7 +40,7 @@ class FilmTest {
     @DisplayName("Проверка валидации длинного описания")
     void validateDescriptionLengthTest() {
         final Film film = new Film(1, "Film description is too long", "a".repeat(201),
-                Film.FILM_BIRTHDAY, 10, new Rating("Комедия"));
+                Film.FILM_BIRTHDAY, 10, new Mpa("Комедия"));
         assertValidation(film, Size.class, "description");
     }
 
@@ -48,7 +48,7 @@ class FilmTest {
     @DisplayName("Проверка валидации неправильной даты")
     void validateReleaseDateTest() {
         final Film film = new Film(1, "Film release date is invalid", "a".repeat(200),
-                new GregorianCalendar(1895, Calendar.DECEMBER, 27), 10, new Rating("Комедия"));
+                new GregorianCalendar(1895, Calendar.DECEMBER, 27), 10, new Mpa("Комедия"));
         assertValidation(film, AssertFalse.class, "validReleaseDate");
     }
 
@@ -56,7 +56,7 @@ class FilmTest {
     @DisplayName("Проверка валидации отрицательной длительности")
     void validateDurationTest() {
         final Film film = new Film(1, "Film duration is invalid", "a",
-                Film.FILM_BIRTHDAY, -10, new Rating("Комедия"));
+                Film.FILM_BIRTHDAY, -10, new Mpa("Комедия"));
         assertValidation(film, PositiveOrZero.class, "duration");
     }
 
@@ -64,7 +64,7 @@ class FilmTest {
     @DisplayName("Проверка валидации наличия id при Update")
     void validateIdTest() {
         final Film film = new Film(null, "Film duration is invalid", "a",
-                Film.FILM_BIRTHDAY, 10, new Rating("Комедия"));
+                Film.FILM_BIRTHDAY, 10, new Mpa("Комедия"));
         assertValidation(film, NotNull.class, "id", Marker.OnUpdate.class);
     }
 

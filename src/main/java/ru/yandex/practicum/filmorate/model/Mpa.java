@@ -10,13 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Rating {
+public class Mpa {
     @NotNull(groups = Marker.OnUpdate.class)
     private Integer id;
-    @NotNull
     private String name;
 
-    public Rating(String name) {
+    public Mpa(String name) {
         this.name = name;
     }
 }

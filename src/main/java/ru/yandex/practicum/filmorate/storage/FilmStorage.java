@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.Collection;
 
@@ -23,9 +23,9 @@ public interface FilmStorage {
 
     Genre getGenre(Integer id);
 
-    Collection<Rating> getAllRatings();
+    Collection<Mpa> getAllRatings();
 
-    Rating getRating(Integer id);
+    Mpa getRating(Integer id);
 
     void addLike(Integer filmId, Integer userId);
 

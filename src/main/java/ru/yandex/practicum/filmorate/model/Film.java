@@ -22,19 +22,24 @@ public class Film {
     private Calendar releaseDate;
     @PositiveOrZero
     private Integer duration;
-    private Rating rating;
-    private List<String> genres;
+    private Mpa mpa;
+    private List<Genre> genres;
     private Set<Integer> likes = new HashSet<>();
 
     public static final Calendar FILM_BIRTHDAY = new GregorianCalendar(1895, Calendar.DECEMBER, 28);
 
-    public Film(Integer id, String name, String description, Calendar releaseDate, Integer duration, Rating rating) {
+    public Film(Integer id, String name, String description, Calendar releaseDate, Integer duration, Mpa mpa) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
-        this.rating = rating;
+        this.mpa = mpa;
+    }
+    public Film(Integer id, String name, String description, Calendar releaseDate, Integer duration,
+                Mpa mpa, List<Genre> genres) {
+        this(id, name, description, releaseDate, duration, mpa);
+        this.genres = genres;
     }
 
     @AssertFalse(message = "Film release date is invalid")

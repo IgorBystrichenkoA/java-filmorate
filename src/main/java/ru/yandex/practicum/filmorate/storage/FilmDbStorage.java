@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.rowMapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.rowMapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.rowMapper.RatingRowMapper;
@@ -41,10 +41,10 @@ public class FilmDbStorage implements FilmStorage {
         namedParams.addValue("description", film.getDescription());
         namedParams.addValue("releaseDate", film.getReleaseDate());
         namedParams.addValue("duration", film.getDuration());
-        namedParams.addValue("rating_id", film.getRating() == null ? null : film.getRating().getId());
+        namedParams.addValue("mpa", film.getMpa() == null ? null : film.getMpa().getId());
 
-        String sqlQuery = "INSERT INTO films (name, description, releaseDate, duration, rating_id) " +
-                "VALUES (:name,:description,:releaseDate,:duration,:rating_id)";
+        String sqlQuery = "INSERT INTO films (name, description, releaseDate, duration, mpa) " +
+                "VALUES (:name,:description,:releaseDate,:duration,:mpa)";
         jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
         film.setId(keyHolder.getKeyAs(Integer.class));
         return film;
@@ -73,9 +73,9 @@ public class FilmDbStorage implements FilmStorage {
         namedParams.addValue("description", film.getDescription());
         namedParams.addValue("releaseDate", film.getReleaseDate());
         namedParams.addValue("duration", film.getDuration());
-        namedParams.addValue("rating_id", film.getRating() == null ? null : film.getRating().getId());
+        namedParams.addValue("mpa", film.getMpa() == null ? null : film.getMpa().getId());
         String sqlQuery = "UPDATE films SET name = :name, description = :description, " +
-                "releaseDate =:releaseDate, duration =:duration, rating_id =:rating_id " +
+                "releaseDate =:releaseDate, duration =:duration, mpa =:mpa " +
                 "WHERE id = :id";
         int rows = jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
         if (rows == 0) {
@@ -129,17 +129,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Rating> getAllRatings() {
+    public Collection<Mpa> getAllRatings() {
         String sqlQuery = "SELECT * FROM ratings";
         return jdbc.query(sqlQuery, ratingRowMapper);
     }
 
     @Override
-    public Rating getRating(Integer id) {
+    public Mpa getRating(Integer id) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
         String sqlQuery = "SELECT * FROM ratings WHERE id = :id";
-        Rating result = jdbc.queryForObject(sqlQuery, namedParams, ratingRowMapper);
+        Mpa result = jdbc.queryForObject(sqlQuery, namedParams, ratingRowMapper);
         if (result == null) {
             throw new NotFoundException("Rating not found");
         }
