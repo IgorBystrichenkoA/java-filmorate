@@ -94,7 +94,7 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "SELECT u.* FROM friends f1 JOIN friends f2 ON " +
                 "f1.user_friend_id = f2.user_id AND " +
                 "f2.user_friend_id = f1.user_id " +
-                "JOIN users u ON u.id = f1.user_friend_id" +
+                "JOIN users u ON u.id = f1.user_friend_id " +
                 "WHERE f1.user_id = :id";
         return jdbc.query(sqlQuery, namedParams, mapper);
     }
