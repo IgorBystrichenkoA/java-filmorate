@@ -129,7 +129,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Genre> getAllGenres() {
-        String sqlQuery = "SELECT DISTINCT name, id FROM genres";
+        String sqlQuery = "SELECT name, id FROM genres ORDER BY id";
         return jdbc.query(sqlQuery, genreRowMapper);
     }
 
