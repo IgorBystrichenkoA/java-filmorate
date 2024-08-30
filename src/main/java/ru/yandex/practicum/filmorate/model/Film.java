@@ -23,7 +23,7 @@ public class Film {
     @PositiveOrZero
     private Integer duration;
     private Mpa mpa;
-    private Set<Genre> genres;
+    private LinkedHashSet<Genre> genres;
     private Set<Integer> likes = new HashSet<>();
 
     public static final Calendar FILM_BIRTHDAY = new GregorianCalendar(1895, Calendar.DECEMBER, 28);
@@ -38,7 +38,7 @@ public class Film {
     }
 
     public Film(Integer id, String name, String description, Calendar releaseDate, Integer duration, Mpa mpa,
-                Set<Genre> genres) {
+                LinkedHashSet<Genre> genres) {
         this(id, name, description, releaseDate, duration, mpa);
         this.genres = genres;
     }

@@ -17,10 +17,7 @@ import ru.yandex.practicum.filmorate.storage.rowMapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.rowMapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.rowMapper.RatingRowMapper;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Component("h2FilmStorage")
 public class FilmDbStorage implements FilmStorage {
@@ -65,6 +62,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
 
         film.setId(keyHolder.getKeyAs(Integer.class));
+
         Set<Genre> genres = film.getGenres();
         if (genres != null) {
             for (Genre genre : genres) {
@@ -93,7 +91,7 @@ public class FilmDbStorage implements FilmStorage {
                     "WHERE gf.film_id = :id";
             List<Genre> genres = jdbc.query(sqlQuery, namedParams, genreRowMapper);
             if (!genres.isEmpty()) {
-                film.setGenres(new HashSet<>(genres));
+                film.setGenres(new LinkedHashSet<>(genres));
             }
             return film;
         } catch (EmptyResultDataAccessException | NullPointerException e) {
