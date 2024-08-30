@@ -85,7 +85,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE f.id = :id";
         try {
             Film film = jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
-            sqlQuery = "SELECT * FROM genres_films gf" +
+            sqlQuery = "SELECT * FROM genres_films gf " +
                     "INNER JOIN genres g ON gf.genre_id = g.id " +
                     "WHERE gf.film_id = :id";
             List<Genre> genres = jdbc.query(sqlQuery, namedParams, genreRowMapper);
