@@ -39,3 +39,9 @@ CREATE TABLE IF NOT EXISTS friends (
     user_friend_id int REFERENCES users,
     PRIMARY KEY (user_id, user_friend_id)
 );
+
+INSERT INTO genres (name)
+VALUES ('Комедия'), ('Драмма'), ('Боевик'), ('Супергероика'), ('Ужасы');
+
+INSERT INTO mpa (name)
+VALUES ('G'), ('PG'), ('PG-13'), ('R'), ('NC-17');
