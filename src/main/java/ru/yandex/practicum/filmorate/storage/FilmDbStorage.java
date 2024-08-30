@@ -109,9 +109,17 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getTopFilms(Integer count) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("count", count);
-        String sqlQuery = "SELECT f.*, m.name FROM films AS f " +
-                "INNER JOIN mpa m ON f.rating_id = m.id" +
-                "ORDER BY likes DESC LIMIT :count";
+        String sqlQuery = "SELECT COUNT(l.USER_ID) likes_count, f.*, m.name AS mpaName FROM FILMS AS f " +
+                "LEFT JOIN LIKES AS l ON F.ID = L.FILM_ID " +
+                "INNER JOIN mpa AS m ON f.mpa = m.id " +
+                "GROUP BY f.ID " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT :count;";
+//        SELECT COUNT(l.USER_ID) likes_count, f.* FROM FILMS f
+//        LEFT JOIN LIKES l ON F.ID = L.FILM_ID
+//        GROUP BY f.ID
+//        ORDER BY likes_count DESC
+//        LIMIT 10
         return jdbc.query(sqlQuery, namedParams, filmRowMapper);
     }
 
@@ -135,7 +143,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Mpa> getAllRatings() {
-        String sqlQuery = "SELECT * FROM ratings";
+        String sqlQuery = "SELECT * FROM mpa";
         return jdbc.query(sqlQuery, ratingRowMapper);
     }
 
@@ -143,7 +151,7 @@ public class FilmDbStorage implements FilmStorage {
     public Mpa getRating(Integer id) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
-        String sqlQuery = "SELECT * FROM ratings WHERE id = :id";
+        String sqlQuery = "SELECT * FROM mpa WHERE id = :id";
         Mpa result = jdbc.queryForObject(sqlQuery, namedParams, ratingRowMapper);
         if (result == null) {
             throw new NotFoundException("Rating not found");
