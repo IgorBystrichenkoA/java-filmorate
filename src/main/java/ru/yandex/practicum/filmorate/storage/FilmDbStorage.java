@@ -77,7 +77,10 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "UPDATE films SET name = :name, description = :description, " +
                 "releaseDate =:releaseDate, duration =:duration, rating_id =:rating_id " +
                 "WHERE id = :id";
-        jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
+        int rows = jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
+        if (rows == 0) {
+            throw new NotFoundException("Film not found");
+        }
         return film;
     }
 

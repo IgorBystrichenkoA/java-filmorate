@@ -51,6 +51,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User update(User user) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
+        namedParams.addValue("id", user.getId());
         namedParams.addValue("email", user.getEmail());
         namedParams.addValue("login", user.getLogin());
         namedParams.addValue("name", user.getName());
@@ -58,7 +59,10 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "UPDATE users SET " +
                 "email = :email, login =:login, name =:name, birthday =:birthday " +
                 "WHERE id = :id";
-        jdbc.update(sqlQuery, namedParams);
+        int rows = jdbc.update(sqlQuery, namedParams);
+        if (rows == 0) {
+            throw new NotFoundException("User not found");
+        }
         return user;
     }
 
