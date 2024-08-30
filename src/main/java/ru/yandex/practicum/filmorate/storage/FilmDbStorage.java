@@ -18,7 +18,9 @@ import ru.yandex.practicum.filmorate.storage.rowMapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.rowMapper.RatingRowMapper;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component("h2FilmStorage")
 public class FilmDbStorage implements FilmStorage {
@@ -64,13 +66,15 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(keyHolder.getKeyAs(Integer.class));
 
-        List<Genre> genres = film.getGenres();
-        for (Genre genre : genres) {
-            namedParams.addValue("film_id", film.getId());
-            namedParams.addValue("genre_id", genre.getId());
-            sqlQuery = "INSERT INTO genres_films (film_id, genre_id) " +
-                    "VALUES (:film_id, :genre_id)";
-            jdbc.update(sqlQuery, namedParams);
+        Set<Genre> genres = film.getGenres();
+        if (genres != null) {
+            for (Genre genre : genres) {
+                namedParams.addValue("film_id", film.getId());
+                namedParams.addValue("genre_id", genre.getId());
+                sqlQuery = "INSERT INTO genres_films (film_id, genre_id) " +
+                        "VALUES (:film_id, :genre_id)";
+                jdbc.update(sqlQuery, namedParams);
+            }
         }
 
         return film;
@@ -85,14 +89,14 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE f.id = :id";
         try {
             Film film = jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
-            sqlQuery = "SELECT * FROM genres_films gf " +
-                    "INNER JOIN genres g ON gf.genre_id = g.id " +
+            sqlQuery = "SELECT g.name, g.id FROM genres_films gf " +
+                    "INNER JOIN genres AS g ON gf.genre_id = g.id " +
                     "WHERE gf.film_id = :id";
             List<Genre> genres = jdbc.query(sqlQuery, namedParams, genreRowMapper);
             if (!genres.isEmpty()) {
-                film.setGenres(genres);
+                film.setGenres(new HashSet<>(genres));
             }
-            return jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
+            return film;
         } catch (EmptyResultDataAccessException | NullPointerException e) {
             throw new NotFoundException("Film not found");
         }
