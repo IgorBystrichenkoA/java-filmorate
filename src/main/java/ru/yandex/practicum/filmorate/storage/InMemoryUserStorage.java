@@ -85,6 +85,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     }
 
+    @Override
+    public Collection<User> getConfirmedFriends(Integer id) {
+        return List.of();
+    }
+
     private int generateId() {
         return ++seq;
     }
