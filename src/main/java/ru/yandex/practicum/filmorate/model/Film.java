@@ -3,16 +3,14 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class Film {
     @NotNull(groups = Marker.OnUpdate.class)
     private Integer id;
@@ -26,7 +24,7 @@ public class Film {
     private Integer duration;
     private Rating rating;
     private List<String> genres;
-    private Set<Integer> likes = ConcurrentHashMap.newKeySet();
+    private Set<Integer> likes = new HashSet<>();
 
     public static final Calendar FILM_BIRTHDAY = new GregorianCalendar(1895, Calendar.DECEMBER, 28);
 

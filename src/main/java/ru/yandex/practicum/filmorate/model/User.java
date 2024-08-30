@@ -7,8 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Data
 @NoArgsConstructor
@@ -25,8 +25,8 @@ public class User {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Calendar birthday;
 
-    private Set<Integer> friends = ConcurrentHashMap.newKeySet();
-    private Set<Integer> notConfirmedFriends = ConcurrentHashMap.newKeySet();
+    private Set<Integer> friends = new HashSet<>();
+    private Set<Integer> notConfirmedFriends = new HashSet<>();
 
     public User(Integer id, String email, String login, String name, Calendar birthday) {
         this.id = id;
