@@ -65,7 +65,6 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
 
         film.setId(keyHolder.getKeyAs(Integer.class));
-
         Set<Genre> genres = film.getGenres();
         if (genres != null) {
             for (Genre genre : genres) {

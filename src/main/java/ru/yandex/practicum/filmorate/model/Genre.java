@@ -11,5 +11,4 @@ import lombok.NoArgsConstructor;
 public class Genre {
     @NotNull(groups = Marker.OnUpdate.class)
     private Integer id;
-    private String name;
 }
