@@ -25,6 +25,11 @@ public class FilmController {
         this.filmStorage = filmStorage;
     }
 
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable int id) {
+        return filmStorage.get(id);
+    }
+
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         return filmStorage.create(film);

@@ -59,7 +59,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film get(Integer id) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
-        String sqlQuery = "SELECT f.*, m.name AS mpaName FROM films f " +
+        String sqlQuery = "SELECT f.*, m.name AS mpaName FROM films AS f " +
                 "INNER JOIN mpa AS m ON f.mpa = m.id " +
                 "WHERE f.id = :id";
         Film result = jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
