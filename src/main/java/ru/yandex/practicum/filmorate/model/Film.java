@@ -36,8 +36,9 @@ public class Film {
         this.duration = duration;
         this.mpa = mpa;
     }
-    public Film(Integer id, String name, String description, Calendar releaseDate, Integer duration,
-                Mpa mpa, List<Genre> genres) {
+
+    public Film(Integer id, String name, String description, Calendar releaseDate, Integer duration, Mpa mpa,
+                List<Genre> genres) {
         this(id, name, description, releaseDate, duration, mpa);
         this.genres = genres;
     }
