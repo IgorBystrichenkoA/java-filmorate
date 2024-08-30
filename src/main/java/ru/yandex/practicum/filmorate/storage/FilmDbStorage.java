@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.BadCreateRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -48,7 +49,14 @@ public class FilmDbStorage implements FilmStorage {
         namedParams.addValue("releaseDate", film.getReleaseDate());
         namedParams.addValue("duration", film.getDuration());
         namedParams.addValue("mpa", film.getMpa() == null ? null : film.getMpa().getId());
-
+        try {
+            getRating(film.getMpa().getId());
+            if (film.getGenres() != null) {
+                film.getGenres().forEach(genre -> getGenre(genre.getId()));
+            }
+        } catch (NotFoundException e) {
+            throw new BadCreateRequestException("Parameters not found");
+        }
         String sqlQuery = "INSERT INTO films (name, description, releaseDate, duration, mpa) " +
                 "VALUES (:name,:description,:releaseDate,:duration,:mpa)";
         jdbc.update(sqlQuery, namedParams, keyHolder, new String[] {"id"});
@@ -164,7 +172,7 @@ public class FilmDbStorage implements FilmStorage {
         namedParams.addValue("filmId", filmId);
         namedParams.addValue("userId", userId);
         try {
-            String sqlQuery = "INSERT INTO likes (film_id, user_id) VALUES(:filmId, :userId)";
+            String sqlQuery = "INSERT INTO likes (film_id, user_id) VALUES (:filmId, :userId)";
             jdbc.update(sqlQuery, namedParams);
         } catch (DuplicateKeyException ignored) {
         }
