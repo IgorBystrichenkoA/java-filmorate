@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -18,16 +20,19 @@ import java.util.Collection;
 @Component("h2FilmStorage")
 public class FilmDbStorage implements FilmStorage {
     NamedParameterJdbcTemplate jdbc;
+    UserStorage userStorage;
     FilmRowMapper filmRowMapper;
     GenreRowMapper genreRowMapper;
     RatingRowMapper ratingRowMapper;
 
     @Autowired
     public FilmDbStorage(NamedParameterJdbcTemplate jdbc,
+                         @Qualifier("h2UserStorage") UserStorage userStorage,
                          FilmRowMapper filmRowMapper,
                          GenreRowMapper genreRowMapper,
                          RatingRowMapper ratingRowMapper) {
         this.jdbc = jdbc;
+        this.userStorage = userStorage;
         this.filmRowMapper = filmRowMapper;
         this.genreRowMapper = genreRowMapper;
         this.ratingRowMapper = ratingRowMapper;
@@ -54,9 +59,9 @@ public class FilmDbStorage implements FilmStorage {
     public Film get(Integer id) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
-        String sqlQuery = "SELECT f.*, r.name AS rating_name FROM films AS f " +
-                "INNER JOIN ratings AS r ON f.rating_id = r.id " +
-                "WHERE id = :id";
+        String sqlQuery = "SELECT f.*, m.name AS mpaName FROM films f " +
+                "INNER JOIN mpa AS m ON f.mpa = m.id " +
+                "WHERE f.id = :id";
         Film result = jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
         if (result == null) {
             throw new NotFoundException("Film not found");
@@ -95,8 +100,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getAllFilms() {
-        String sqlQuery = "SELECT f.*, r.name AS rating_name FROM films AS f " +
-                "INNER JOIN ratings AS r ON f.rating_id = r.id";
+        String sqlQuery = "SELECT f.*, m.name AS mpaName FROM films f " +
+                "INNER JOIN mpa m ON f.mpa = m.id";
         return jdbc.query(sqlQuery, filmRowMapper);
     }
 
@@ -104,8 +109,8 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getTopFilms(Integer count) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("count", count);
-        String sqlQuery = "SELECT f.*, r.name FROM films AS f " +
-                "INNER JOIN ratings AS r ON f.rating_id = r.id" +
+        String sqlQuery = "SELECT f.*, m.name FROM films AS f " +
+                "INNER JOIN mpa m ON f.rating_id = m.id" +
                 "ORDER BY likes DESC LIMIT :count";
         return jdbc.query(sqlQuery, namedParams, filmRowMapper);
     }
@@ -147,12 +152,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(Integer userId, Integer filmId) {
+    public void addLike(Integer filmId, Integer userId) {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
-        namedParams.addValue("userId", userId);
+        get(filmId);
+        userStorage.get(userId);
         namedParams.addValue("filmId", filmId);
-        String sqlQuery = "INSERT INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
-        jdbc.update(sqlQuery, namedParams);
+        namedParams.addValue("userId", userId);
+        try {
+            String sqlQuery = "INSERT INTO likes (film_id, user_id) VALUES(:filmId, :userId)";
+            jdbc.update(sqlQuery, namedParams);
+        } catch (DuplicateKeyException ignored) {
+        }
     }
 
     @Override
@@ -161,6 +171,9 @@ public class FilmDbStorage implements FilmStorage {
         namedParams.addValue("userId", userId);
         namedParams.addValue("filmId", filmId);
         String sqlQuery = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
-        jdbc.update(sqlQuery, namedParams);
+        int rows = jdbc.update(sqlQuery, namedParams);
+        if (rows == 0) {
+            throw new NotFoundException("Like not found");
+        }
     }
 }
