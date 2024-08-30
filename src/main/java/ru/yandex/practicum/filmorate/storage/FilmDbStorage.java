@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -62,11 +63,11 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT f.*, m.name AS mpaName FROM films AS f " +
                 "INNER JOIN mpa AS m ON f.mpa = m.id " +
                 "WHERE f.id = :id";
-        Film result = jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
-        if (result == null) {
+        try {
+            return jdbc.queryForObject(sqlQuery, namedParams, filmRowMapper);
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Film not found");
         }
-        return result;
     }
 
     @Override
@@ -129,11 +130,11 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
         String sqlQuery = "SELECT * FROM genres WHERE id = :id";
-        Genre result = jdbc.queryForObject(sqlQuery, namedParams, genreRowMapper);
-        if (result == null) {
+        try {
+            return jdbc.queryForObject(sqlQuery, namedParams, genreRowMapper);
+        } catch (EmptyResultDataAccessException empty) {
             throw new NotFoundException("Genre not found");
         }
-        return result;
     }
 
     @Override
@@ -147,11 +148,12 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
         String sqlQuery = "SELECT * FROM mpa WHERE id = :id";
-        Mpa result = jdbc.queryForObject(sqlQuery, namedParams, ratingRowMapper);
-        if (result == null) {
+        try {
+            return jdbc.queryForObject(sqlQuery, namedParams, ratingRowMapper);
+        } catch (EmptyResultDataAccessException empty) {
             throw new NotFoundException("Rating not found");
         }
-        return result;
+
     }
 
     @Override

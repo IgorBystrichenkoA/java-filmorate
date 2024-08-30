@@ -43,11 +43,7 @@ public class UserDbStorage implements UserStorage {
         namedParams.addValue("id", id);
         String sqlQuery = "SELECT * FROM users WHERE id = :id";
         try {
-            User result = jdbc.queryForObject(sqlQuery, namedParams, mapper);
-            if (result == null) {
-                throw new NotFoundException("User not found");
-            }
-            return result;
+            return jdbc.queryForObject(sqlQuery, namedParams, mapper);
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("User not found");
         }
