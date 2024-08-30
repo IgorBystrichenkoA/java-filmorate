@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS films (
     description varchar(200),
     releaseDate date,
     duration integer,
-    mpa integer
+    mpa int REFERENCES mpa
 );
 
 CREATE TABLE IF NOT EXISTS users (
