@@ -33,8 +33,8 @@ public class UserService {
 
     public Collection<User> getMutualFriends(Integer id1, Integer id2) {
         log.info("get mutual friends {} {}", id1, id2);
-        Collection<User> user1Friends = userStorage.getFriendsOf(id1);
-        Collection<User> user2Friends = userStorage.getFriendsOf(id2);
+        Collection<User> user1Friends = userStorage.getFriends(id1);
+        Collection<User> user2Friends = userStorage.getFriends(id2);
         Set<User> resultSet = new HashSet<>(user1Friends);
         resultSet.retainAll(new HashSet<>(user2Friends));
         return resultSet;

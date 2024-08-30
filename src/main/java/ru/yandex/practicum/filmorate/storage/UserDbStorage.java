@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -41,11 +42,15 @@ public class UserDbStorage implements UserStorage {
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
         String sqlQuery = "SELECT * FROM users WHERE id = :id";
-        User result = jdbc.queryForObject(sqlQuery, namedParams, mapper);
-        if (result == null) {
+        try {
+            User result = jdbc.queryForObject(sqlQuery, namedParams, mapper);
+            if (result == null) {
+                throw new NotFoundException("User not found");
+            }
+            return result;
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("User not found");
         }
-        return result;
     }
 
     @Override
@@ -83,11 +88,14 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> getFriends(Integer id) {
+        get(id);
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
-        String sqlQuery = "SELECT u.* FROM friends AS f " +
-                "INNER JOIN users AS u ON f.user_friend_id = u.id " +
-                "WHERE f.user_id = :id";
+        String sqlQuery = "SELECT u.* FROM friends f1 JOIN friends f2 ON " +
+                "f1.user_friend_id = f2.user_id AND " +
+                "f2.user_friend_id = f1.user_id " +
+                "JOIN users u ON u.id = f1.user_friend_id" +
+                "WHERE f1.user_id = :id";
         return jdbc.query(sqlQuery, namedParams, mapper);
     }
 
@@ -101,6 +109,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(Integer id, Integer friendId) {
+        get(id); // проверяем, что пользователи существуют
+        get(friendId);
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
         namedParams.addValue("friendId", friendId);
@@ -110,22 +120,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteFriend(Integer id, Integer friendId) {
+        get(id); // проверяем, что пользователи существуют
+        get(friendId);
         MapSqlParameterSource namedParams = new MapSqlParameterSource();
         namedParams.addValue("id", id);
         namedParams.addValue("friendId", friendId);
         String sqlQuery = "DELETE FROM friends WHERE user_id = :id AND user_friend_id = :friendId";
         jdbc.update(sqlQuery, namedParams);
-    }
-
-    @Override
-    public Collection<User> getFriendsOf(Integer id) {
-        MapSqlParameterSource namedParams = new MapSqlParameterSource();
-        namedParams.addValue("id", id);
-        String sqlQuery = "SELECT u.* FROM friends f1 JOIN friends f2 ON " +
-                "f1.user_friend_id = f2.user_id AND " +
-                "f2.user_friend_id = f1.user_id " +
-                "JOIN users u ON u.id = f1.user_friend_id" +
-                "WHERE f1.user_id = :id";
-        return jdbc.query(sqlQuery, namedParams, mapper);
     }
 }

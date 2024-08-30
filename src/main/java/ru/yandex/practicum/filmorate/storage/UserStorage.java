@@ -22,6 +22,4 @@ public interface UserStorage {
     void addFriend(Integer id, Integer friendId);
 
     void deleteFriend(Integer id1, Integer friendId);
-
-    Collection<User> getFriendsOf(Integer id);
 }
