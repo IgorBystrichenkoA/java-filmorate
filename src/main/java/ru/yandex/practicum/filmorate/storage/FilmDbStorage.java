@@ -115,17 +115,12 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY f.ID " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT :count;";
-//        SELECT COUNT(l.USER_ID) likes_count, f.* FROM FILMS f
-//        LEFT JOIN LIKES l ON F.ID = L.FILM_ID
-//        GROUP BY f.ID
-//        ORDER BY likes_count DESC
-//        LIMIT 10
         return jdbc.query(sqlQuery, namedParams, filmRowMapper);
     }
 
     @Override
     public Collection<Genre> getAllGenres() {
-        String sqlQuery = "SELECT * FROM genres";
+        String sqlQuery = "SELECT DISTINCT name, id FROM genres";
         return jdbc.query(sqlQuery, genreRowMapper);
     }
 

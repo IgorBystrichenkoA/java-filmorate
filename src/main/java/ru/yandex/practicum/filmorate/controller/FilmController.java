@@ -60,9 +60,14 @@ public class FilmController {
         return filmService.getTopFilms(count);
     }
 
-    @GetMapping("/genres ")
+    @GetMapping("/genres")
     public Collection<Genre> getAllGenres() {
         return filmStorage.getAllGenres();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre getGenre(@PathVariable int id) {
+        return filmStorage.getGenre(id);
     }
 
     @GetMapping("/mpa/{id}")
