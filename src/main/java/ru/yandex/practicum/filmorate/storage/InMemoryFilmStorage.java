@@ -4,8 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,6 +63,36 @@ public class InMemoryFilmStorage implements FilmStorage {
                     .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size())
                     .limit(count)
                     .toList();
+    }
+
+    @Override
+    public Collection<Genre> getAllGenres() {
+        return List.of();
+    }
+
+    @Override
+    public Genre getGenre(Integer id) {
+        return null;
+    }
+
+    @Override
+    public Collection<Mpa> getAllRatings() {
+        return List.of();
+    }
+
+    @Override
+    public Mpa getRating(Integer id) {
+        return null;
+    }
+
+    @Override
+    public void addLike(Integer filmId, Integer userId) {
+
+    }
+
+    @Override
+    public void deleteLike(Integer filmId, Integer userId) {
+
     }
 
     private int generateId() {
